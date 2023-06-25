@@ -7,24 +7,20 @@ function App() {
 			<Sorting algorithm={{ run: bubbleSort, displayName: "Bubble Sort" }}>
 				<Sorting.Controlls>
           <Sorting.Controlls.NumCandles />
-          <Sorting.Controlls.MaxCandleHeight />
-          <Sorting.Controlls.CandleWidth />
-          <Sorting.Controlls.SortingSpeed />
           <Sorting.Controlls.RandomizeArray />
 					<Sorting.Controlls.SortButton />
           <Sorting.Controlls.SortingStatus />
+          <Sorting.Controlls.ShowAlgorithm />
 				</Sorting.Controlls>
 				<Sorting.Visualizer />
 			</Sorting>
 			<Sorting algorithm={{ run: insertionSort, displayName: "Insertion Sort" }}>
 				<Sorting.Controlls>
           <Sorting.Controlls.NumCandles />
-          <Sorting.Controlls.MaxCandleHeight />
-          <Sorting.Controlls.CandleWidth />
-          <Sorting.Controlls.SortingSpeed />
           <Sorting.Controlls.RandomizeArray />
 					<Sorting.Controlls.SortButton />
           <Sorting.Controlls.SortingStatus />
+          <Sorting.Controlls.ShowAlgorithm />
 				</Sorting.Controlls>
 				<Sorting.Visualizer />
 			</Sorting>
