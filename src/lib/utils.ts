@@ -22,6 +22,10 @@ export function randomArray(length = 50, max = 250) {
   return array;
 }
 
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export type Signal<T> = (action?: React.SetStateAction<T>) => T;
 export function createSignal<T>(
 	state: T,

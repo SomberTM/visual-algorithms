@@ -2,7 +2,8 @@ import { Signal } from "@/lib/utils";
 import { createContext, useContext } from "react";
 
 export type SortingStatus = "Idle" | "Sorting" | "Finished";
-export type SortingAlgorithm = (array: Signal<number[]>, speed?: number) => Promise<void>;
+export type SortingGroups = Array<Array<number>>;
+export type SortingAlgorithm = (this: SortingContext) => Promise<void>;
 
 export interface SortingContext {
 	array: Signal<number[]>;
@@ -11,6 +12,7 @@ export interface SortingContext {
 	speed: Signal<number>;
   numCandles: Signal<number>;
   maxCandleHeight: Signal<number>;
+  groups: Signal<SortingGroups>;
   algorithm: { run: SortingAlgorithm, displayName: string };
 }
 

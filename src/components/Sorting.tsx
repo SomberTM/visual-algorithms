@@ -2,6 +2,7 @@ import { createSignal, randomArray } from "@/lib/utils";
 import {
 	SortingAlgorithm,
 	SortingContext,
+	SortingGroups,
 	SortingStatus,
 } from "@/context/Sorting";
 import { useState } from "react";
@@ -27,6 +28,7 @@ export default function Sorting({
 	const [maxCandleHeight, setMaxCandleHeight] = useState<number>(
 		DEFAULT_MAX_CANDLE_HEIGHT
 	);
+  const [groups, setGroups] = useState<SortingGroups>([])
 
 	return (
 		<SortingContext.Provider
@@ -37,6 +39,7 @@ export default function Sorting({
 				speed: createSignal(speed, setSpeed),
 				numCandles: createSignal(numCandles, setNumCandles),
 				maxCandleHeight: createSignal(maxCandleHeight, setMaxCandleHeight),
+        groups: createSignal(groups, setGroups),
 				algorithm,
 			}}
 		>

@@ -17,7 +17,7 @@ function SortButton() {
 
 	async function handleSortClicked() {
 		sorting.status("Sorting");
-		await sorting.algorithm.run(sorting.array, sorting.speed());
+    await sorting.algorithm.run.bind(sorting)();
 		sorting.status("Finished");
 	}
 
@@ -279,8 +279,8 @@ export default function Controlls({ children }: React.PropsWithChildren) {
 		useState<ControllElement[]>(initialControlls);
 
 	return (
-		<div className="flex justify-between p-4 items-center border rounded-lg">
-			<div className="flex gap-4 items-center">
+		<div className="flex lg:flex-row flex-col lg:justify-between p-4 items-center border rounded-lg">
+			<div className="flex md:flex-row flex-col gap-2 md:gap-4 items-center">
 				{controlls.map((Controll, idx) => (
 					<Controll key={idx} />
 				))}
