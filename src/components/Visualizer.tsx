@@ -8,7 +8,7 @@ interface VisualizerProps {
 	height?: number;
 }
 
-const groupColors = ["red", "green", "blue", "purple", "white"];
+const groupColors = ["red", "green", "yellow", "blue", "white"];
 
 export default function Visualizer({ width, height }: VisualizerProps) {
 	const sorting = useSortingContext();

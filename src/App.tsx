@@ -1,5 +1,5 @@
 import Sorting from "@/components/Sorting";
-import { bubbleSort, insertionSort } from "@/lib/algorithms";
+import { bubbleSort, insertionSort, selectionSort } from "@/lib/algorithms";
 
 function App() {
 	return (
@@ -15,6 +15,16 @@ function App() {
 				<Sorting.Visualizer />
 			</Sorting>
 			<Sorting algorithm={{ run: insertionSort, displayName: "Insertion Sort" }}>
+				<Sorting.Controlls>
+          <Sorting.Controlls.NumCandles />
+          <Sorting.Controlls.RandomizeArray />
+					<Sorting.Controlls.SortButton />
+          <Sorting.Controlls.SortingStatus />
+          <Sorting.Controlls.ShowAlgorithm />
+				</Sorting.Controlls>
+				<Sorting.Visualizer />
+			</Sorting>
+      <Sorting algorithm={{ run: selectionSort, displayName: "Selection Sort" }}>
 				<Sorting.Controlls>
           <Sorting.Controlls.NumCandles />
           <Sorting.Controlls.RandomizeArray />
