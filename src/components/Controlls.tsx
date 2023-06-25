@@ -17,7 +17,7 @@ function SortButton() {
 
 	async function handleSortClicked() {
 		sorting.status("Sorting");
-		await sorting.algorithm(sorting.array, sorting.speed());
+		await sorting.algorithm.run(sorting.array, sorting.speed());
 		sorting.status("Finished");
 	}
 
@@ -102,7 +102,7 @@ function ShowAlgrotihm() {
 
 	return (
 		<p>
-			Algorithm: <span className="font-bold text-yellow-300">{sorting.algorithm.name}</span>
+			Algorithm: <span className="font-bold text-yellow-300">{sorting.algorithm.displayName}</span>
 		</p>
 	);
 }
@@ -119,6 +119,7 @@ function NumCandles() {
           return newArray.slice(0, newNumCandles);
         })
       } else {
+        sorting.status("Idle")
         sorting.array((oldArray) => {
           const newArray = [...oldArray];
           for (let i = 0; i < newNumCandles - oldCandles; i++)
@@ -276,7 +277,7 @@ export default function Controlls({ children }: React.PropsWithChildren) {
 
 	const [controlls, setControlls] =
 		useState<ControllElement[]>(initialControlls);
-    
+
 	return (
 		<div className="flex justify-between p-4 items-center border rounded-lg">
 			<div className="flex gap-4 items-center">

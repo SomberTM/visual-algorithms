@@ -3,12 +3,7 @@ import { Signal, swap } from "@/lib/utils";
 
 async function bubbleSort(array: Signal<number[]>, speed = 100) {
 	const localArray = [...array()];
-	// for (let i = 0; i < localArray.length; i++)
-	// 	for (let j = i + 1; j < localArray.length; j++) {
-	// 		if (localArray[i] <= localArray[j]) continue;
-	// 		array([...swap(localArray, i, j)]);
-	// 		await new Promise((resolve) => setTimeout(resolve, speed));
-	// 	}
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     let swapped = false;
     for (let i = 1; i < localArray.length; i++) {
@@ -25,7 +20,7 @@ async function bubbleSort(array: Signal<number[]>, speed = 100) {
 function App() {
 	return (
 		<main className="p-2 flex flex-col gap-4 min-h-[100dvh] bg-background">
-			<Sorting algorithm={bubbleSort}>
+			<Sorting algorithm={{ run: bubbleSort, displayName: "Bubble Sort" }}>
 				<Sorting.Controlls>
           <Sorting.Controlls.NumCandles />
           <Sorting.Controlls.MaxCandleHeight />
@@ -37,7 +32,7 @@ function App() {
 				</Sorting.Controlls>
 				<Sorting.Visualizer />
 			</Sorting>
-			<Sorting algorithm={bubbleSort}>
+			<Sorting algorithm={{ run: bubbleSort, displayName: "Bubble Sort" }}>
 				<Sorting.Controlls>
 					<Sorting.Controlls.SortButton />
 				</Sorting.Controlls>

@@ -11,7 +11,7 @@ export interface SortingContext {
 	speed: Signal<number>;
   numCandles: Signal<number>;
   maxCandleHeight: Signal<number>;
-  algorithm: SortingAlgorithm;
+  algorithm: { run: SortingAlgorithm, displayName: string };
 }
 
 export const SortingContext = createContext<SortingContext | null>(null);

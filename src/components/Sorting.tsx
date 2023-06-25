@@ -16,7 +16,7 @@ const DEFAULT_SORTING_SPEED = 10;
 export default function Sorting({
 	children,
 	algorithm,
-}: React.PropsWithChildren<{ algorithm: SortingAlgorithm }>) {
+}: React.PropsWithChildren<{ algorithm: { run: SortingAlgorithm, displayName: string } }>) {
 	const [array, setArray] = useState<number[]>(
 		randomArray(DEFAULT_NUM_CANDLES, DEFAULT_MAX_CANDLE_HEIGHT)
 	);
