@@ -1,5 +1,5 @@
 import { SortingContext } from "@/context/Sorting";
-import { sleep, swap } from "./utils";
+import { Signal, sleep, swap } from "@/lib/utils";
 
 export async function bubbleSort(this: SortingContext) {
 	const localArray = [...this.array()];
@@ -55,4 +55,38 @@ export async function selectionSort(this: SortingContext) {
 		}
 	}
 	this.groups([]);
+}
+
+export async function quicksort(this: SortingContext) {
+  await recursiveQuicksort(this, [...this.array()], 0, this.array().length - 1);
+  this.groups([])
+}
+
+async function recursiveQuicksort(context: SortingContext, array: number[], lo: number, hi: number) {
+  if (lo >= hi || lo < 0) return;
+
+  const p = await quicksortPartition(context, array, lo, hi);
+
+  await recursiveQuicksort(context, array, lo, p - 1);
+  await recursiveQuicksort(context, array, p + 1, hi);
+}
+
+async function quicksortPartition(context: SortingContext, array: number[], lo: number, hi: number) {
+  const pivot = array[hi];
+  let i = lo - 1;
+
+  for (let j = lo; j < hi; j++) {
+    if (array[j] <= pivot) {
+      i++;
+      context.groups([[i], [j], Array.from({length: Math.abs(j - i)}).map((_, idx) => idx + i + 1), [lo, hi]])
+      context.array([...swap(array, i, j)]);
+      await sleep(context.speed());
+    }
+  }
+
+  i++;
+  context.groups([[i + 1], [hi - 1], Array.from({length: Math.abs(hi - i)}).map((_, idx) => idx + i), [lo, hi]])
+  context.array([...swap(array, i, hi)]);
+  await sleep(context.speed());
+  return i;
 }

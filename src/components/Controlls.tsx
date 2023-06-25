@@ -11,6 +11,7 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { randomArray } from "@/lib/utils";
+import { Checkbox } from "./ui/checkbox";
 
 function SortButton() {
 	const sorting = useSortingContext();
@@ -197,11 +198,25 @@ function SortTime() {
 	return (
 		<p>
 			Time:{" "}
-			<span className="font-bold">
-				{sorting.status() === "Finished" ? sorting.sortTime() : "Waiting"}
-			</span>
-			{sorting.status() === "Finished" ? <span className="opacity-50">ms</span> : ""}
+      {sorting.status() === "Idle" && <span className="font-bold">Waiting</span>}
+      {sorting.status() === "Sorting" && <span className="font-bold">Processing</span>}
+			{sorting.status() === "Finished" && <span className="font-bold">{sorting.sortTime()}<span className="opacity-50">ms</span></span>}
 		</p>
+	);
+}
+
+function ShowCandleHeight() {
+	const sorting = useSortingContext();
+
+	return (
+		<div className="flex items-center gap-1">
+			<Label>Show Candle Height</Label>
+			<Checkbox
+				className="max-w-[6rem]"
+				checked={sorting.showCandleHeight()}
+				onCheckedChange={() => sorting.showCandleHeight((old) => !old)}
+			/>
+		</div>
 	);
 }
 
@@ -273,6 +288,7 @@ const allControls = [
 	MaxCandleHeight,
 	ShowAlgrotihm,
 	SortTime,
+	ShowCandleHeight,
 ];
 const allControlNames = allControls.map(({ name }) => name);
 
@@ -286,6 +302,7 @@ const controllNameMap = new Map([
 	[MaxCandleHeight, "Max Candle Height"],
 	[ShowAlgrotihm, "Show Algorithm"],
 	[SortTime, "Sort Time"],
+	[ShowCandleHeight, "Show Candle Height"],
 ]);
 
 export default function Controlls({ children }: React.PropsWithChildren) {
@@ -326,3 +343,4 @@ Controlls.CandleWidth = CandleWidth;
 Controlls.NumCandles = NumCandles;
 Controlls.MaxCandleHeight = MaxCandleHeight;
 Controlls.ShowAlgorithm = ShowAlgrotihm;
+Controlls.ShowCandleHeight = ShowCandleHeight;

@@ -17,7 +17,7 @@ export default function Candle({
         className={cn("border border-slate-400", props.className)}
         style={{ ...props.style, width: sorting.candleWidth(), height }}
       />
-      <p className="flex text-xs justify-center opacity-50">{height}</p>
+      {sorting.showCandleHeight() && <p className="flex text-xs justify-center opacity-50">{height}</p>}
     </div>
 	);
 }

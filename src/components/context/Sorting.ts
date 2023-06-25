@@ -14,6 +14,7 @@ export interface SortingContext {
   maxCandleHeight: Signal<number>;
   groups: Signal<SortingGroups>;
   sortTime: Signal<number>;
+  showCandleHeight: Signal<boolean>;
   algorithm: { run: SortingAlgorithm, displayName: string };
 }
 

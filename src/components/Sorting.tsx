@@ -30,6 +30,7 @@ export default function Sorting({
 	);
   const [groups, setGroups] = useState<SortingGroups>([])
   const [sortTime, setSortTime] = useState<number>(0);
+  const [showCandleHeight, setShowCandleHeight] = useState<boolean>(true);
 
 	return (
 		<SortingContext.Provider
@@ -42,6 +43,7 @@ export default function Sorting({
 				maxCandleHeight: createSignal(maxCandleHeight, setMaxCandleHeight),
         groups: createSignal(groups, setGroups),
         sortTime: createSignal(sortTime, setSortTime),
+        showCandleHeight: createSignal(showCandleHeight, setShowCandleHeight),
 				algorithm,
 			}}
 		>
