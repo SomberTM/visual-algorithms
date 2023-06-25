@@ -1,5 +1,5 @@
 import { SortingContext } from "@/context/Sorting";
-import { Signal, sleep, swap } from "@/lib/utils";
+import { sleep, swap } from "@/lib/utils";
 
 export async function bubbleSort(this: SortingContext) {
 	const localArray = [...this.array()];
