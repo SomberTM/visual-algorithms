@@ -29,6 +29,7 @@ export default function Sorting({
 		DEFAULT_MAX_CANDLE_HEIGHT
 	);
   const [groups, setGroups] = useState<SortingGroups>([])
+  const [sortTime, setSortTime] = useState<number>(0);
 
 	return (
 		<SortingContext.Provider
@@ -40,6 +41,7 @@ export default function Sorting({
 				numCandles: createSignal(numCandles, setNumCandles),
 				maxCandleHeight: createSignal(maxCandleHeight, setMaxCandleHeight),
         groups: createSignal(groups, setGroups),
+        sortTime: createSignal(sortTime, setSortTime),
 				algorithm,
 			}}
 		>

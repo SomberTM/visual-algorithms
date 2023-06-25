@@ -13,6 +13,7 @@ export interface SortingContext {
   numCandles: Signal<number>;
   maxCandleHeight: Signal<number>;
   groups: Signal<SortingGroups>;
+  sortTime: Signal<number>;
   algorithm: { run: SortingAlgorithm, displayName: string };
 }
 

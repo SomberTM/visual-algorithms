@@ -17,7 +17,9 @@ function SortButton() {
 
 	async function handleSortClicked() {
 		sorting.status("Sorting");
-    await sorting.algorithm.run.bind(sorting)();
+		const timeStart = performance.now();
+		await sorting.algorithm.run.bind(sorting)();
+		sorting.sortTime(performance.now() - timeStart);
 		sorting.status("Finished");
 	}
 
@@ -66,7 +68,7 @@ function RandomizeArray() {
 	const sorting = useSortingContext();
 
 	function handleRandomizeArray() {
-		sorting.array(randomArray(sorting.numCandles(), sorting.maxCandleHeight()))
+		sorting.array(randomArray(sorting.numCandles(), sorting.maxCandleHeight()));
 		sorting.status("Idle");
 	}
 
@@ -102,37 +104,42 @@ function ShowAlgrotihm() {
 
 	return (
 		<p>
-			Algorithm: <span className="font-bold text-yellow-300">{sorting.algorithm.displayName}</span>
+			Algorithm:{" "}
+			<span className="font-bold text-yellow-300">
+				{sorting.algorithm.displayName}
+			</span>
 		</p>
 	);
 }
 
 function NumCandles() {
-  const sorting = useSortingContext();
+	const sorting = useSortingContext();
 
-  function onNumCandlesChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const newNumCandles = Number(event.target.value)
-    sorting.numCandles((oldCandles) => {
-      if (newNumCandles < oldCandles) {
-        sorting.array((oldArray) => {
-          const newArray = [...oldArray];
-          return newArray.slice(0, newNumCandles);
-        })
-      } else {
-        sorting.status("Idle")
-        sorting.array((oldArray) => {
-          const newArray = [...oldArray];
-          for (let i = 0; i < newNumCandles - oldCandles; i++)
-            newArray.push(Math.floor(Math.random() * sorting.maxCandleHeight()))
-          return newArray
-        })
-      }
+	function onNumCandlesChange(event: React.ChangeEvent<HTMLInputElement>) {
+		const newNumCandles = Number(event.target.value);
+		sorting.numCandles((oldCandles) => {
+			if (newNumCandles < oldCandles) {
+				sorting.array((oldArray) => {
+					const newArray = [...oldArray];
+					return newArray.slice(0, newNumCandles);
+				});
+			} else {
+				sorting.status("Idle");
+				sorting.array((oldArray) => {
+					const newArray = [...oldArray];
+					for (let i = 0; i < newNumCandles - oldCandles; i++)
+						newArray.push(
+							Math.floor(Math.random() * sorting.maxCandleHeight())
+						);
+					return newArray;
+				});
+			}
 
-      return newNumCandles;
-    })
-  }
+			return newNumCandles;
+		});
+	}
 
-  return (
+	return (
 		<div className="flex items-center gap-1">
 			<Label>Candles</Label>
 			<Input
@@ -147,30 +154,30 @@ function NumCandles() {
 }
 
 function MaxCandleHeight() {
-  const sorting = useSortingContext();
+	const sorting = useSortingContext();
 
-  function onMaxCandleHeightChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const newMaxCandleHeight = Number(event.target.value)
-    sorting.maxCandleHeight((oldMaxHeight) => {
-      let deltaHeight = newMaxCandleHeight - oldMaxHeight;
-      if (deltaHeight < 0) {
-        deltaHeight = -deltaHeight;
-        sorting.array((oldArray) => {
-          const newArray = [...oldArray];
-          for (let i = 0; i < newArray.length; i++) {
-            if (newArray[i] - deltaHeight > newMaxCandleHeight) {
-              newArray[i] -= deltaHeight;
-            }
-          }
-          return newArray;
-        })
-      }
+	function onMaxCandleHeightChange(event: React.ChangeEvent<HTMLInputElement>) {
+		const newMaxCandleHeight = Number(event.target.value);
+		sorting.maxCandleHeight((oldMaxHeight) => {
+			let deltaHeight = newMaxCandleHeight - oldMaxHeight;
+			if (deltaHeight < 0) {
+				deltaHeight = -deltaHeight;
+				sorting.array((oldArray) => {
+					const newArray = [...oldArray];
+					for (let i = 0; i < newArray.length; i++) {
+						if (newArray[i] - deltaHeight > newMaxCandleHeight) {
+							newArray[i] -= deltaHeight;
+						}
+					}
+					return newArray;
+				});
+			}
 
-      return newMaxCandleHeight;
-    })
-  }
+			return newMaxCandleHeight;
+		});
+	}
 
-  return (
+	return (
 		<div className="flex items-center gap-1">
 			<Label>Max Candle Height</Label>
 			<Input
@@ -181,6 +188,20 @@ function MaxCandleHeight() {
 				onChange={onMaxCandleHeightChange}
 			/>
 		</div>
+	);
+}
+
+function SortTime() {
+	const sorting = useSortingContext();
+
+	return (
+		<p>
+			Time:{" "}
+			<span className="font-bold">
+				{sorting.status() === "Finished" ? sorting.sortTime() : "Waiting"}
+			</span>
+			{sorting.status() === "Finished" ? <span className="opacity-50">ms</span> : ""}
+		</p>
 	);
 }
 
@@ -248,21 +269,23 @@ const allControls = [
 	SortingSpeed,
 	RandomizeArray,
 	CandleWidth,
-  NumCandles,
-  MaxCandleHeight,
-  ShowAlgrotihm,
+	NumCandles,
+	MaxCandleHeight,
+	ShowAlgrotihm,
+	SortTime,
 ];
 const allControlNames = allControls.map(({ name }) => name);
 
 const controllNameMap = new Map([
-  [SortButton, "Sort Button"],
-  [SortingStatus, "Sorting Status"],
-  [SortingSpeed, "Sorting Speed"],
-  [RandomizeArray, "Randomize Array"],
-  [CandleWidth, "Candle Width"],
-  [NumCandles, "Num Candles"],
-  [MaxCandleHeight, "Max Candle Height"],
-  [ShowAlgrotihm, "Show Algorithm"]
+	[SortButton, "Sort Button"],
+	[SortingStatus, "Sorting Status"],
+	[SortingSpeed, "Sorting Speed"],
+	[RandomizeArray, "Randomize Array"],
+	[CandleWidth, "Candle Width"],
+	[NumCandles, "Num Candles"],
+	[MaxCandleHeight, "Max Candle Height"],
+	[ShowAlgrotihm, "Show Algorithm"],
+	[SortTime, "Sort Time"],
 ]);
 
 export default function Controlls({ children }: React.PropsWithChildren) {
