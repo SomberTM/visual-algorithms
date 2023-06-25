@@ -3,12 +3,23 @@ import { Signal, swap } from "@/lib/utils";
 
 async function bubbleSort(array: Signal<number[]>, speed = 100) {
 	const localArray = [...array()];
-	for (let i = 0; i < localArray.length; i++)
-		for (let j = i + 1; j < localArray.length; j++) {
-			if (localArray[i] <= localArray[j]) continue;
-			array([...swap(localArray, i, j)]);
-			await new Promise((resolve) => setTimeout(resolve, speed));
-		}
+	// for (let i = 0; i < localArray.length; i++)
+	// 	for (let j = i + 1; j < localArray.length; j++) {
+	// 		if (localArray[i] <= localArray[j]) continue;
+	// 		array([...swap(localArray, i, j)]);
+	// 		await new Promise((resolve) => setTimeout(resolve, speed));
+	// 	}
+  while (true) {
+    let swapped = false;
+    for (let i = 1; i < localArray.length; i++) {
+      if (localArray[i - 1] > localArray[i]) {
+        array([...swap(localArray, i - 1, i)])
+        swapped = true;
+        await new Promise((resolve) => setTimeout(resolve, speed));
+      }
+    }
+    if (!swapped) break;
+  }
 }
 
 function App() {

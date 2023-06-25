@@ -231,7 +231,7 @@ function ControllsMenu({
 							onCheckedControllChange(checked, controll)
 						}
 					>
-						{controll.name}
+						{controllNameMap.get(controll)}
 					</DropdownMenuCheckboxItem>
 				))}
 			</DropdownMenuContent>
@@ -253,6 +253,17 @@ const allControls = [
 ];
 const allControlNames = allControls.map(({ name }) => name);
 
+const controllNameMap = new Map([
+  [SortButton, "Sort Button"],
+  [SortingStatus, "Sorting Status"],
+  [SortingSpeed, "Sorting Speed"],
+  [RandomizeArray, "Randomize Array"],
+  [CandleWidth, "Candle Width"],
+  [NumCandles, "Num Candles"],
+  [MaxCandleHeight, "Max Candle Height"],
+  [ShowAlgrotihm, "Show Algorithm"]
+]);
+
 export default function Controlls({ children }: React.PropsWithChildren) {
 	if (!Array.isArray(children)) children = [children];
 	const childrenArray: React.ReactNode[] = children as React.ReactNode[];
@@ -265,7 +276,7 @@ export default function Controlls({ children }: React.PropsWithChildren) {
 
 	const [controlls, setControlls] =
 		useState<ControllElement[]>(initialControlls);
-
+    
 	return (
 		<div className="flex justify-between p-4 items-center border rounded-lg">
 			<div className="flex gap-4 items-center">
