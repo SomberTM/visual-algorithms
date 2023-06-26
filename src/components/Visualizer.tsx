@@ -1,7 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useSortingContext } from "@/context/Sorting";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import Candle from "./Candle";
+import { useSorter } from "./context/Sorting";
+import { observer } from "mobx-react-lite";
 
 interface VisualizerProps {
 	width?: number;
@@ -10,26 +10,26 @@ interface VisualizerProps {
 
 const groupColors = ["red", "green", "yellow", "blue", "purple", "white"];
 
-export default function Visualizer({ width, height }: VisualizerProps) {
-	const sorting = useSortingContext();
+const Visualizer = observer(({ width, height }: VisualizerProps) => {
+	const sorting = useSorter();
 	const [parent] = useAutoAnimate();
 
-	sorting.maxCandleHeight(height);
+	if (height) sorting.maxCandleHeight = height;
 
 	return (
 		<div
 			style={{
 				width,
-				height: sorting.maxCandleHeight(),
+				height: sorting.maxCandleHeight,
 			}}
 			className="mx-4 mt-2 flex gap-1 items-end"
 			ref={parent}
 		>
-			{sorting.array().map((value, idx) => {
+			{sorting.array.map((value, idx) => {
 				const candleColor = groupColors.at(
-					sorting
-						.groups()
-						.findIndex((group) => group.some((index) => index === idx))
+					sorting.groups.findIndex((group) =>
+						group.some((index) => index === idx)
+					)
 				);
 				return (
 					<Candle
@@ -43,4 +43,6 @@ export default function Visualizer({ width, height }: VisualizerProps) {
 			})}
 		</div>
 	);
-}
+});
+
+export default Visualizer;

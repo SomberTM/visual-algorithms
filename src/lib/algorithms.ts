@@ -1,92 +1,100 @@
-import { SortingContext } from "@/context/Sorting";
-import { sleep, swap } from "@/lib/utils";
+import { SorterStore } from "../stores/SorterStore";
 
-export async function bubbleSort(this: SortingContext) {
-	const localArray = [...this.array()];
-	// eslint-disable-next-line no-constant-condition
-	while (true) {
-		let swapped = false;
-		for (let i = 1; i < localArray.length; i++) {
-			if (localArray[i - 1] > localArray[i]) {
-				this.groups([[i - 1], [i]]);
-				this.array([...swap(localArray, i - 1, i)]);
+export async function bubbleSort(this: SorterStore) {
+	let swapped;
+	do {
+		swapped = false;
+		for (let i = 1; i < this.array.length; i++) {
+			if (this.array[i - 1] > this.array[i]) {
+				this.setGroups([[i - 1], [i]]);
+				await this.swapAndWait(i - 1, i);
 				swapped = true;
-				await sleep(this.speed());
 			}
 		}
 		if (!swapped) {
 			// Just visual sugar for bubble sort to
 			// "check" that the array is actually sorted
-			for (let i = 0; i < localArray.length; i++) {
-				this.groups([[i]]);
-				await sleep(10);
+			for (let i = 0; i < this.array.length; i++) {
+				this.setGroups([[i]]);
+				await this.wait();
 			}
-			this.groups([]);
-			break;
+			this.setGroups([]);
+		}
+	} while (swapped);
+}
+bubbleSort.displayName = "Bubble Sort";
+
+export async function insertionSort(this: SorterStore) {
+	for (let i = 1; i < this.array.length; i++) {
+		for (let j = i; j > 0 && this.array[j - 1] > this.array[j]; j--) {
+			this.setGroups([[j], [j - 1], [i]]);
+			await this.swapAndWait(j, j - 1);
 		}
 	}
+	this.setGroups([]);
 }
+insertionSort.displayName = "Insertion Sort";
 
-export async function insertionSort(this: SortingContext) {
-	const localArray = [...this.array()];
-	for (let i = 1; i < localArray.length; i++) {
-		for (let j = i; j > 0 && localArray[j - 1] > localArray[j]; j--) {
-			this.groups([[j], [j - 1], [i]]);
-			this.array([...swap(localArray, j, j - 1)]);
-			await sleep(this.speed());
-		}
-	}
-	this.groups([]);
-}
-
-export async function selectionSort(this: SortingContext) {
-	const localArray = [...this.array()];
-	for (let i = 0; i < localArray.length - 1; i++) {
+export async function selectionSort(this: SorterStore) {
+	for (let i = 0; i < this.array.length - 1; i++) {
 		let minIndex = i;
-		for (let j = i + 1; j < localArray.length; j++) {
-			if (localArray[j] < localArray[minIndex]) {
+		for (let j = i + 1; j < this.array.length; j++) {
+			if (this.array[j] < this.array[minIndex]) {
 				minIndex = j;
 			}
-			this.groups([[minIndex], [i], Array.from({length: i}).map((_, idx) => idx)]);
+			this.setGroups([
+				[minIndex],
+				[i],
+				Array.from({ length: i }).map((_, idx) => idx),
+			]);
 		}
 		if (minIndex != i) {
-			this.array([...swap(localArray, i, minIndex)]);
-			await sleep(this.speed());
+			await this.swapAndWait(i, minIndex);
 		}
 	}
-	this.groups([]);
+	this.setGroups([]);
+}
+selectionSort.displayName = "Selection Sort";
+
+export async function quicksort(this: SorterStore) {
+	await recursiveQuicksort(this, 0, this.array.length - 1);
+	this.setGroups([]);
+}
+quicksort.displayName = "Quicksort";
+
+async function recursiveQuicksort(store: SorterStore, lo: number, hi: number) {
+	if (lo >= hi || lo < 0) return;
+
+	const p = await quicksortPartition(store, lo, hi);
+
+	await recursiveQuicksort(store, lo, p - 1);
+	await recursiveQuicksort(store, p + 1, hi);
 }
 
-export async function quicksort(this: SortingContext) {
-  await recursiveQuicksort(this, [...this.array()], 0, this.array().length - 1);
-  this.groups([])
-}
+async function quicksortPartition(store: SorterStore, lo: number, hi: number) {
+	const pivot = store.array[hi];
+	let i = lo - 1;
 
-async function recursiveQuicksort(context: SortingContext, array: number[], lo: number, hi: number) {
-  if (lo >= hi || lo < 0) return;
+	for (let j = lo; j < hi; j++) {
+		if (store.array[j] <= pivot) {
+			i++;
+			store.setGroups([
+				[i],
+				[j],
+				Array.from({ length: Math.abs(j - i) }).map((_, idx) => idx + i + 1),
+				[lo, hi],
+			]);
+			await store.swapAndWait(i, j);
+		}
+	}
 
-  const p = await quicksortPartition(context, array, lo, hi);
-
-  await recursiveQuicksort(context, array, lo, p - 1);
-  await recursiveQuicksort(context, array, p + 1, hi);
-}
-
-async function quicksortPartition(context: SortingContext, array: number[], lo: number, hi: number) {
-  const pivot = array[hi];
-  let i = lo - 1;
-
-  for (let j = lo; j < hi; j++) {
-    if (array[j] <= pivot) {
-      i++;
-      context.groups([[i], [j], Array.from({length: Math.abs(j - i)}).map((_, idx) => idx + i + 1), [lo, hi]])
-      context.array([...swap(array, i, j)]);
-      await sleep(context.speed());
-    }
-  }
-
-  i++;
-  context.groups([[i + 1], [hi - 1], Array.from({length: Math.abs(hi - i)}).map((_, idx) => idx + i), [lo, hi]])
-  context.array([...swap(array, i, hi)]);
-  await sleep(context.speed());
-  return i;
+	i++;
+	store.setGroups([
+		[i + 1],
+		[hi - 1],
+		Array.from({ length: Math.abs(hi - i) }).map((_, idx) => idx + i),
+		[lo, hi],
+	]);
+	await store.swapAndWait(i, hi);
+	return i;
 }
