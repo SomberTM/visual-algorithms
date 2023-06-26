@@ -2,12 +2,12 @@ import Visualizer from "./Visualizer";
 import Controlls from "./Controlls";
 import { SorterIdContext } from "@/context/Sorting";
 import { useRootStore } from "@/context/RootStore";
-import { SortingAlgorithmInfo } from "../stores/SorterStore";
+import { SortingAlgorithm } from "../stores/SorterStore";
 
 export default function Sorting({
 	children,
 	algorithm,
-}: React.PropsWithChildren<{ algorithm: SortingAlgorithmInfo }>) {
+}: React.PropsWithChildren<{ algorithm: SortingAlgorithm }>) {
 	const rootStore = useRootStore();
 
 	return (

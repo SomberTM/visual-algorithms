@@ -5,9 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export type SortingStatus = "Idle" | "Sorting" | "Finished";
 export type SortingGroups = Array<Array<number>>;
-export type SortingAlgorithm = () => Promise<void> | void;
-export type SortingAlgorithmInfo = {
-	run: SortingAlgorithm;
+export type SortingAlgorithm = (() => Promise<void> | void) & {
 	displayName: string;
 };
 
@@ -23,6 +21,7 @@ const DEFAULT_SHOW_CANDLE_HEIGHT = true;
 export class SorterStore {
 	public readonly id: string;
 
+	@observable history: Array<Array<number>>;
 	@observable array: number[];
 	@observable status: SortingStatus;
 	@observable groups: SortingGroups;
@@ -33,13 +32,11 @@ export class SorterStore {
 	@observable maxCandleHeight: number;
 	@observable showCandleHeight: boolean;
 
-	constructor(
-		public rootStore: RootStore,
-		public algorithm: SortingAlgorithmInfo
-	) {
+	constructor(public rootStore: RootStore, public algorithm: SortingAlgorithm) {
 		makeObservable(this);
 
 		this.id = uuidv4();
+		this.history = [];
 		this.array = randomArray(DEFAULT_NUM_CANDLES, DEFAULT_MAX_CANDLE_HEIGHT);
 		this.status = DEFAULT_SORTING_STATUS;
 		this.groups = DEFAULT_GROUPS;
@@ -52,7 +49,53 @@ export class SorterStore {
 	}
 
 	@action
+	setArray(array: number[]) {
+		this.array = array;
+	}
+
+	@action
+	setStatus(status: SortingStatus) {
+		this.status = status;
+	}
+
+	@action
+	setGroups(groups: SortingGroups) {
+		this.groups = groups;
+	}
+
+	@action
+	setSortTime(sortTime: number) {
+		this.sortTime = sortTime;
+	}
+
+	@action
+	setSpeed(speed: number) {
+		this.speed = speed;
+	}
+
+	@action
+	setNumCandles(numCandles: number) {
+		this.numCandles = numCandles;
+	}
+
+	@action
+	setCandleWidth(candleWidth: number) {
+		this.candleWidth = candleWidth;
+	}
+
+	@action
+	setMaxCandleHeight(maxCandleHeight: number) {
+		this.maxCandleHeight = maxCandleHeight;
+	}
+
+	@action
+	setShowCandleHeight(showCandleHeight: boolean) {
+		this.showCandleHeight = showCandleHeight;
+	}
+
+	@action
 	swap(i: number, j: number) {
+		this.history.push([...this.array]);
 		const temp = this.array[i];
 		this.array[i] = this.array[j];
 		this.array[j] = temp;
@@ -60,8 +103,13 @@ export class SorterStore {
 
 	@action
 	async swapAndWait(i: number, j: number, before = false) {
-		if (before) await sleep(this.speed);
+		if (before) await this.wait();
+		this.history.push([...this.array]);
 		this.swap(i, j);
-		if (!before) await sleep(this.speed);
+		if (!before) await this.wait();
+	}
+
+	async wait() {
+		await sleep(this.speed);
 	}
 }
