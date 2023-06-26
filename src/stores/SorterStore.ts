@@ -9,6 +9,20 @@ export type SortingAlgorithm = (() => Promise<void> | void) & {
 	displayName: string;
 };
 
+export interface SortingMoment {
+	readonly array: number[];
+	readonly groups: SortingGroups;
+	readonly totalSwaps: number;
+	readonly totalComparisons: number;
+}
+
+export interface SortHistory {
+	readonly moments: SortingMoment[];
+	readonly totalSwaps: number;
+	readonly totalComparisons: number;
+	readonly speed: number;
+}
+
 const DEFAULT_MAX_CANDLE_HEIGHT = 300;
 const DEFAULT_NUM_CANDLES = 50;
 const DEFAULT_SORTING_STATUS: SortingStatus = "Idle";
@@ -21,8 +35,8 @@ const DEFAULT_SHOW_CANDLE_HEIGHT = true;
 export class SorterStore {
 	public readonly id: string;
 
-	@observable history: Array<Array<number>>;
 	@observable array: number[];
+	@observable history: SortHistory;
 	@observable status: SortingStatus;
 	@observable groups: SortingGroups;
 	@observable sortTime: number;
@@ -36,7 +50,6 @@ export class SorterStore {
 		makeObservable(this);
 
 		this.id = uuidv4();
-		this.history = [];
 		this.array = randomArray(DEFAULT_NUM_CANDLES, DEFAULT_MAX_CANDLE_HEIGHT);
 		this.status = DEFAULT_SORTING_STATUS;
 		this.groups = DEFAULT_GROUPS;
@@ -46,6 +59,23 @@ export class SorterStore {
 		this.candleWidth = DEFAULT_CANDLE_WIDTH;
 		this.maxCandleHeight = DEFAULT_MAX_CANDLE_HEIGHT;
 		this.showCandleHeight = DEFAULT_SHOW_CANDLE_HEIGHT;
+		this.history = this.getIdleHistory();
+	}
+
+	private getIdleHistory(): SortHistory {
+		return {
+			moments: [
+				{
+					array: [...this.array],
+					groups: [],
+					totalComparisons: 0,
+					totalSwaps: 0,
+				},
+			],
+			totalComparisons: 0,
+			totalSwaps: 0,
+			speed: this.speed,
+		};
 	}
 
 	@action
@@ -55,7 +85,11 @@ export class SorterStore {
 
 	@action
 	setStatus(status: SortingStatus) {
-		if (status !== "Finished") this.history = [];
+		console.log(status);
+		if (status === "Idle") this.history = this.getIdleHistory();
+		if (status === "Finished") {
+			console.log(this.history.moments);
+		}
 		this.status = status;
 	}
 
@@ -71,21 +105,25 @@ export class SorterStore {
 
 	@action
 	setSpeed(speed: number) {
+		if (speed < 0) speed = 0;
 		this.speed = speed;
 	}
 
 	@action
 	setNumCandles(numCandles: number) {
+		if (numCandles < 0) numCandles = 0;
 		this.numCandles = numCandles;
 	}
 
 	@action
 	setCandleWidth(candleWidth: number) {
+		if (candleWidth < 0) candleWidth = 0;
 		this.candleWidth = candleWidth;
 	}
 
 	@action
 	setMaxCandleHeight(maxCandleHeight: number) {
+		if (maxCandleHeight < 0) maxCandleHeight = 0;
 		this.maxCandleHeight = maxCandleHeight;
 	}
 
@@ -96,7 +134,21 @@ export class SorterStore {
 
 	@action
 	swap(i: number, j: number) {
-		this.history.push([...this.array]);
+		const lastMoment = this.history.moments.at(-1);
+		this.history = {
+			...this.history,
+			moments: [
+				...this.history.moments,
+				{
+					array: [...this.array],
+					groups: [...this.groups],
+					totalSwaps: lastMoment!.totalSwaps + 1,
+					totalComparisons: 0,
+				},
+			],
+			totalSwaps: this.history.totalSwaps + 1,
+		};
+
 		const temp = this.array[i];
 		this.array[i] = this.array[j];
 		this.array[j] = temp;
@@ -105,7 +157,6 @@ export class SorterStore {
 	@action
 	async swapAndWait(i: number, j: number, before = false) {
 		if (before) await this.wait();
-		this.history.push([...this.array]);
 		this.swap(i, j);
 		if (!before) await this.wait();
 	}
@@ -116,10 +167,10 @@ export class SorterStore {
 
 	@action
 	async sort() {
-		this.status = "Sorting";
+		this.setStatus("Sorting");
 		const timeStart = performance.now();
 		await this.algorithm.bind(this)();
 		this.sortTime = performance.now() - timeStart;
-		this.status = "Finished";
+		this.setStatus("Finished");
 	}
 }

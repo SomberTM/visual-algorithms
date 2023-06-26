@@ -315,7 +315,7 @@ const Controlls = observer(({ children }: React.PropsWithChildren) => {
 				{controlls.map((Controll, idx) => (
 					<Controll key={idx} />
 				))}
-				<div>Swaps: {sorting.history.length}</div>
+				<div>Swaps: {sorting.history.totalSwaps}</div>
 			</div>
 			<div className="rounded-lg border px-4 py-2">
 				<ControllsMenu
