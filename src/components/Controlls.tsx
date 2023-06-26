@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useSortingContext } from "@/context/Sorting";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import {
 	DropdownMenu,
@@ -12,27 +11,30 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { randomArray } from "@/lib/utils";
 import { Checkbox } from "./ui/checkbox";
+import { useSorter } from "./context/Sorting";
+import { observer } from "mobx-react-lite";
 
-function SortButton() {
-	const sorting = useSortingContext();
+export const SortButton = observer(() => {
+	const sorting = useSorter();
 
 	async function handleSortClicked() {
-		sorting.status("Sorting");
+		sorting.status = "Sorting";
 		const timeStart = performance.now();
 		await sorting.algorithm.run.bind(sorting)();
-		sorting.sortTime(performance.now() - timeStart);
-		sorting.status("Finished");
+		sorting.sortTime = performance.now() - timeStart;
+		sorting.status = "Finished";
 	}
 
 	return (
-		<Button disabled={sorting.status() !== "Idle"} onClick={handleSortClicked}>
+		<Button disabled={sorting.status !== "Idle"} onClick={handleSortClicked}>
 			Sort
 		</Button>
 	);
-}
+});
+SortButton.displayName = "Sort Button";
 
-function CandleWidth() {
-	const sorting = useSortingContext();
+export const CandleWidth = observer(() => {
+	const sorting = useSorter();
 
 	return (
 		<div className="flex items-center gap-1">
@@ -40,51 +42,54 @@ function CandleWidth() {
 			<Input
 				type="number"
 				className="max-w-[6rem]"
-				value={sorting.candleWidth()}
-				disabled={sorting.status() === "Sorting"}
-				onChange={(event) => sorting.candleWidth(Number(event.target.value))}
+				value={sorting.candleWidth}
+				disabled={sorting.status === "Sorting"}
+				onChange={(event) => (sorting.candleWidth = Number(event.target.value))}
 			/>
 		</div>
 	);
-}
+});
+CandleWidth.displayName = "Candle Width";
 
-function SortingStatus() {
-	const sorting = useSortingContext();
+export const SortingStatus = observer(() => {
+	const sorting = useSorter();
 
 	return (
 		<p>
 			Status:{" "}
 			<span
 				className={`font-bold ${
-					sorting.status() === "Sorting" ? "text-red-500" : "text-green-600"
+					sorting.status === "Sorting" ? "text-red-500" : "text-green-600"
 				}`}
 			>
-				{sorting.status()}
+				{sorting.status}
 			</span>
 		</p>
 	);
-}
+});
+SortingStatus.displayName = "Sorting Status";
 
-function RandomizeArray() {
-	const sorting = useSortingContext();
+export const RandomizeArray = observer(() => {
+	const sorting = useSorter();
 
 	function handleRandomizeArray() {
-		sorting.array(randomArray(sorting.numCandles(), sorting.maxCandleHeight()));
-		sorting.status("Idle");
+		sorting.array = randomArray(sorting.numCandles, sorting.maxCandleHeight);
+		sorting.status = "Idle";
 	}
 
 	return (
 		<Button
-			disabled={sorting.status() === "Sorting"}
+			disabled={sorting.status === "Sorting"}
 			onClick={handleRandomizeArray}
 		>
 			Randomize Array
 		</Button>
 	);
-}
+});
+RandomizeArray.displayName = "Randomize Array";
 
-function SortingSpeed() {
-	const sorting = useSortingContext();
+export const SortingSpeed = observer(() => {
+	const sorting = useSorter();
 
 	return (
 		<div className="flex items-center gap-1">
@@ -92,16 +97,17 @@ function SortingSpeed() {
 			<Input
 				type="number"
 				className="max-w-[6rem]"
-				value={sorting.speed()}
-				disabled={sorting.status() === "Sorting"}
-				onChange={(event) => sorting.speed(Number(event.target.value))}
+				value={sorting.speed}
+				disabled={sorting.status === "Sorting"}
+				onChange={(event) => (sorting.speed = Number(event.target.value))}
 			/>
 		</div>
 	);
-}
+});
+SortingSpeed.displayName = "Sorting Speed";
 
-function ShowAlgrotihm() {
-	const sorting = useSortingContext();
+export const ShowAlgrotihm = observer(() => {
+	const sorting = useSorter();
 
 	return (
 		<p>
@@ -111,33 +117,23 @@ function ShowAlgrotihm() {
 			</span>
 		</p>
 	);
-}
+});
+ShowAlgrotihm.displayName = "Show Algorithm";
 
-function NumCandles() {
-	const sorting = useSortingContext();
+export const NumCandles = observer(() => {
+	const sorting = useSorter();
 
 	function onNumCandlesChange(event: React.ChangeEvent<HTMLInputElement>) {
 		const newNumCandles = Number(event.target.value);
-		sorting.numCandles((oldCandles) => {
-			if (newNumCandles < oldCandles) {
-				sorting.array((oldArray) => {
-					const newArray = [...oldArray];
-					return newArray.slice(0, newNumCandles);
-				});
-			} else {
-				sorting.status("Idle");
-				sorting.array((oldArray) => {
-					const newArray = [...oldArray];
-					for (let i = 0; i < newNumCandles - oldCandles; i++)
-						newArray.push(
-							Math.floor(Math.random() * sorting.maxCandleHeight())
-						);
-					return newArray;
-				});
-			}
+		if (newNumCandles < sorting.numCandles) {
+			sorting.array = sorting.array.slice(0, newNumCandles);
+		} else {
+			sorting.status = "Idle";
+			for (let i = 0; i < newNumCandles - sorting.numCandles; i++)
+				sorting.array.push(Math.floor(Math.random() * sorting.maxCandleHeight));
+		}
 
-			return newNumCandles;
-		});
+		sorting.numCandles = newNumCandles;
 	}
 
 	return (
@@ -146,36 +142,30 @@ function NumCandles() {
 			<Input
 				type="number"
 				className="max-w-[6rem]"
-				value={sorting.numCandles()}
-				disabled={sorting.status() === "Sorting"}
+				value={sorting.numCandles}
+				disabled={sorting.status === "Sorting"}
 				onChange={onNumCandlesChange}
 			/>
 		</div>
 	);
-}
+});
+NumCandles.displayName = "Num Candles";
 
-function MaxCandleHeight() {
-	const sorting = useSortingContext();
+export const MaxCandleHeight = observer(() => {
+	const sorting = useSorter();
 
 	function onMaxCandleHeightChange(event: React.ChangeEvent<HTMLInputElement>) {
 		const newMaxCandleHeight = Number(event.target.value);
-		sorting.maxCandleHeight((oldMaxHeight) => {
-			let deltaHeight = newMaxCandleHeight - oldMaxHeight;
-			if (deltaHeight < 0) {
-				deltaHeight = -deltaHeight;
-				sorting.array((oldArray) => {
-					const newArray = [...oldArray];
-					for (let i = 0; i < newArray.length; i++) {
-						if (newArray[i] - deltaHeight > newMaxCandleHeight) {
-							newArray[i] -= deltaHeight;
-						}
-					}
-					return newArray;
-				});
+		let deltaHeight = newMaxCandleHeight - sorting.maxCandleHeight;
+		if (deltaHeight < 0) {
+			deltaHeight = -deltaHeight;
+			for (let i = 0; i < sorting.array.length; i++) {
+				if (sorting.array[i] - deltaHeight > newMaxCandleHeight)
+					sorting.array[i] -= deltaHeight;
 			}
+		}
 
-			return newMaxCandleHeight;
-		});
+		sorting.maxCandleHeight = newMaxCandleHeight;
 	}
 
 	return (
@@ -184,41 +174,53 @@ function MaxCandleHeight() {
 			<Input
 				type="number"
 				className="max-w-[6rem]"
-				value={sorting.maxCandleHeight()}
-				disabled={sorting.status() === "Sorting"}
+				value={sorting.maxCandleHeight}
+				disabled={sorting.status === "Sorting"}
 				onChange={onMaxCandleHeightChange}
 			/>
 		</div>
 	);
-}
+});
+MaxCandleHeight.displayName = "Max Candle Height";
 
-function SortTime() {
-	const sorting = useSortingContext();
+export const SortTime = observer(() => {
+	const sorting = useSorter();
 
 	return (
 		<p>
 			Time:{" "}
-      {sorting.status() === "Idle" && <span className="font-bold">Waiting</span>}
-      {sorting.status() === "Sorting" && <span className="font-bold">Processing</span>}
-			{sorting.status() === "Finished" && <span className="font-bold">{sorting.sortTime()}<span className="opacity-50">ms</span></span>}
+			{sorting.status === "Idle" && <span className="font-bold">Waiting</span>}
+			{sorting.status === "Sorting" && (
+				<span className="font-bold">Processing</span>
+			)}
+			{sorting.status === "Finished" && (
+				<span className="font-bold">
+					{sorting.sortTime}
+					<span className="opacity-50">ms</span>
+				</span>
+			)}
 		</p>
 	);
-}
+});
+SortTime.displayName = "Sort Time";
 
-function ShowCandleHeight() {
-	const sorting = useSortingContext();
+export const ShowCandleHeight = observer(() => {
+	const sorting = useSorter();
 
 	return (
 		<div className="flex items-center gap-1">
 			<Label>Show Candle Height</Label>
 			<Checkbox
 				className="max-w-[6rem]"
-				checked={sorting.showCandleHeight()}
-				onCheckedChange={() => sorting.showCandleHeight((old) => !old)}
+				checked={sorting.showCandleHeight}
+				onCheckedChange={() =>
+					(sorting.showCandleHeight = !sorting.showCandleHeight)
+				}
 			/>
 		</div>
 	);
-}
+});
+ShowCandleHeight.displayName = "Show Candle Height";
 
 interface ControllsMenuProps {
 	initialControlls: ControllElement[];
@@ -229,28 +231,19 @@ function ControllsMenu({
 	initialControlls,
 	onControllsChange,
 }: ControllsMenuProps) {
-	const [checkedControls, setCheckedControlls] =
-		useState<ControllElement[]>(initialControlls);
-
-	useEffect(() => {
-		onControllsChange(checkedControls);
-	}, [checkedControls, onControllsChange]);
-
 	function onCheckedControllChange(
 		checked: boolean,
 		controll: ControllElement
 	) {
-		if (checked)
-			setCheckedControlls((oldControlls) => [...oldControlls, controll]);
-		else
-			setCheckedControlls((oldControlls) => {
-				const newControlls = [...oldControlls];
-				newControlls.splice(
-					newControlls.findIndex((c) => c.name === controll.name),
-					1
-				);
-				return newControlls;
-			});
+		if (checked) onControllsChange([...initialControlls, controll]);
+		else {
+			const newControlls = [...initialControlls];
+			newControlls.splice(
+				newControlls.findIndex((c) => c.displayName === controll.displayName),
+				1
+			);
+			onControllsChange(newControlls);
+		}
 	}
 
 	return (
@@ -262,13 +255,15 @@ function ControllsMenu({
 					<DropdownMenuCheckboxItem
 						key={idx}
 						checked={
-							checkedControls.findIndex((c) => c.name === controll.name) >= 0
+							initialControlls.findIndex((c) => {
+								return c.displayName === controll.displayName;
+							}) >= 0
 						}
 						onCheckedChange={(checked) =>
 							onCheckedControllChange(checked, controll)
 						}
 					>
-						{controllNameMap.get(controll)}
+						{controll.displayName}
 					</DropdownMenuCheckboxItem>
 				))}
 			</DropdownMenuContent>
@@ -276,7 +271,9 @@ function ControllsMenu({
 	);
 }
 
-type ControllElement = () => JSX.Element;
+type ControllElement = (() => JSX.Element) & {
+	displayName: string;
+};
 
 const allControls = [
 	SortButton,
@@ -290,30 +287,21 @@ const allControls = [
 	SortTime,
 	ShowCandleHeight,
 ];
-const allControlNames = allControls.map(({ name }) => name);
+const allControlNames = allControls.map(({ displayName }) => displayName);
 
-const controllNameMap = new Map([
-	[SortButton, "Sort Button"],
-	[SortingStatus, "Sorting Status"],
-	[SortingSpeed, "Sorting Speed"],
-	[RandomizeArray, "Randomize Array"],
-	[CandleWidth, "Candle Width"],
-	[NumCandles, "Num Candles"],
-	[MaxCandleHeight, "Max Candle Height"],
-	[ShowAlgrotihm, "Show Algorithm"],
-	[SortTime, "Sort Time"],
-	[ShowCandleHeight, "Show Candle Height"],
-]);
-
-export default function Controlls({ children }: React.PropsWithChildren) {
-	if (!Array.isArray(children)) children = [children];
-	const childrenArray: React.ReactNode[] = children as React.ReactNode[];
-	const initialControlls = childrenArray
-		.filter(
-			(child: any) =>
-				child["type"] && allControlNames.includes(child["type"]["name"])
-		)
-		.map((child: any) => child["type"]) as any;
+const Controlls = observer(({ children }: React.PropsWithChildren) => {
+	let initialControlls: ControllElement[] = [];
+	if (children) {
+		if (!Array.isArray(children)) children = [children];
+		const childrenArray: React.ReactNode[] = children as React.ReactNode[];
+		initialControlls = childrenArray
+			.filter(
+				(child: any) =>
+					child["type"] &&
+					allControlNames.includes(child["type"]["displayName"])
+			)
+			.map((child: any) => child["type"]) as ControllElement[];
+	}
 
 	const [controlls, setControlls] =
 		useState<ControllElement[]>(initialControlls);
@@ -327,20 +315,12 @@ export default function Controlls({ children }: React.PropsWithChildren) {
 			</div>
 			<div className="rounded-lg border px-4 py-2">
 				<ControllsMenu
-					initialControlls={initialControlls}
+					initialControlls={controlls}
 					onControllsChange={setControlls}
 				/>
 			</div>
 		</div>
 	);
-}
+});
 
-Controlls.SortButton = SortButton;
-Controlls.SortingStatus = SortingStatus;
-Controlls.SortingSpeed = SortingSpeed;
-Controlls.RandomizeArray = RandomizeArray;
-Controlls.CandleWidth = CandleWidth;
-Controlls.NumCandles = NumCandles;
-Controlls.MaxCandleHeight = MaxCandleHeight;
-Controlls.ShowAlgorithm = ShowAlgrotihm;
-Controlls.ShowCandleHeight = ShowCandleHeight;
+export default Controlls;
