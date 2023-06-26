@@ -55,6 +55,7 @@ export class SorterStore {
 
 	@action
 	setStatus(status: SortingStatus) {
+		if (status !== "Finished") this.history = [];
 		this.status = status;
 	}
 
@@ -111,5 +112,14 @@ export class SorterStore {
 
 	async wait() {
 		await sleep(this.speed);
+	}
+
+	@action
+	async sort() {
+		this.status = "Sorting";
+		const timeStart = performance.now();
+		await this.algorithm.bind(this)();
+		this.sortTime = performance.now() - timeStart;
+		this.status = "Finished";
 	}
 }

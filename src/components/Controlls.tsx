@@ -18,11 +18,7 @@ export const SortButton = observer(() => {
 	const sorting = useSorter();
 
 	async function handleSortClicked() {
-		sorting.setStatus("Sorting");
-		const timeStart = performance.now();
-		await sorting.algorithm.bind(sorting)();
-		sorting.setSortTime(performance.now() - timeStart);
-		sorting.setStatus("Finished");
+		sorting.sort();
 	}
 
 	return (
