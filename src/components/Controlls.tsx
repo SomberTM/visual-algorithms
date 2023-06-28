@@ -330,8 +330,6 @@ const Controlls = observer(({ children }: React.PropsWithChildren) => {
 	const [controlls, setControlls] =
 		useState<ControllElement[]>(initialControlls);
 
-	const sorting = useSorter();
-
 	return (
 		<div className="flex lg:flex-row flex-col lg:justify-between p-4 items-center border rounded-lg">
 			<div className="flex md:flex-row flex-col gap-2 md:gap-4 items-center">

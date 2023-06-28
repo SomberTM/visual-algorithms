@@ -3,10 +3,6 @@ import { randomArray, sleep } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
 import { type CSSProperties } from "react";
 
-type SortingPromise =
-	| { reject: (value?: unknown) => void; resolve: (reason?: any) => void }
-	| undefined;
-
 export type SortingStatus = "Idle" | "Sorting" | "Finished";
 export type SortingAlgorithm = (() => Promise<void>) & {
 	displayName: string;
