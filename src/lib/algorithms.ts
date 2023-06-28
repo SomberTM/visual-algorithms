@@ -230,17 +230,18 @@ export async function shellSort(this: SorterStore) {
 	for (const gap of ciuraGaps) {
 		for (let i = gap; i < this.array.length; i++) {
 			const temp = this.array[i];
-			const array = [...this.array];
-			let j;
+			let j: number;
 			for (j = i; j >= gap && this.array[j - gap] > temp; j -= gap) {
-				array[j] = array[j - gap];
+				runInAction(() => {
+					this.array[j] = this.array[j - gap];
+				});
 				this.setGroups({ red: [j], green: [j - gap] });
-				this.setArray(array);
 				await this.wait();
 			}
-			array[j] = temp;
+			runInAction(() => {
+				this.array[j] = temp;
+			});
 			this.setGroups({ red: [j], green: [i] });
-			this.setArray(array);
 			await this.wait();
 		}
 	}

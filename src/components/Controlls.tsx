@@ -4,6 +4,7 @@ import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
+	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
@@ -298,6 +299,13 @@ function ControllsMenu({ controlls, onControllsChange }: ControllsMenuProps) {
 		<DropdownMenu>
 			<DropdownMenuTrigger>Add/Remove Controlls</DropdownMenuTrigger>
 			<DropdownMenuContent>
+				<DropdownMenuLabel>All Controls</DropdownMenuLabel>
+				<DropdownMenuItem onClick={() => onControllsChange(allControls)}>
+					Enable All
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => onControllsChange([])}>
+					Disable All
+				</DropdownMenuItem>
 				{Object.entries(controllGroups).map(([group, groupedControlls]) => {
 					return (
 						<>
@@ -330,13 +338,20 @@ type ControllElement = (() => JSX.Element) & {
 };
 
 const controllGroups: Record<string, ControllElement[]> = {
-	Sorting: [SortButton, SortingSpeed, SortingStatus, SortTime, ShowAlgrotihm, RandomizeArray],
+	Sorting: [
+		SortButton,
+		SortingSpeed,
+		SortingStatus,
+		SortTime,
+		ShowAlgrotihm,
+		RandomizeArray,
+	],
 	Candles: [NumCandles, CandleWidth, MaxCandleHeight, ShowCandleHeight],
 	History: [ShowHistorySlider, ShowStatistics],
 };
-const allControlNames = Object.values(controllGroups)
-	.flatMap((value) => value)
-	.map(({ displayName }) => displayName);
+const allControls = Object.values(controllGroups).flatMap((value) => value);
+
+const allControlNames = allControls.map(({ displayName }) => displayName);
 
 const Controlls = observer(({ children }: React.PropsWithChildren) => {
 	let initialControlls: ControllElement[] = [];
@@ -356,8 +371,8 @@ const Controlls = observer(({ children }: React.PropsWithChildren) => {
 		useState<ControllElement[]>(initialControlls);
 
 	return (
-		<div className="flex lg:flex-row flex-col lg:justify-between p-4 items-center border rounded-lg">
-			<div className="flex md:flex-row flex-col gap-2 md:gap-4 items-center">
+		<div className="flex lg:flex-row flex-col lg:justify-between gap-2 p-4 items-center border rounded-lg">
+			<div className="flex flex-row flex-wrap gap-4 items-center">
 				{controlls.map((Controll, idx) => (
 					<Controll key={idx} />
 				))}

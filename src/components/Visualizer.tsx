@@ -23,18 +23,24 @@ const Visualizer = observer(({ width, height }: VisualizerProps) => {
 				width,
 				height: sorting.maxCandleHeight,
 			}}
-			className="mx-4 mt-2 flex gap-1 items-end"
+			className="mx-4 mt-2 flex items-end"
 			ref={parent}
 		>
-			{(sorting.status !== "Finished" ? sorting.array : sorting.history.moments[sorting.historyIndex].array).map((value, idx) => {
-        let candleColor = DEFAULT_CANDLE_COLOR;
-        const groups = sorting.status !== "Finished" ? sorting.groups : sorting.history.moments[sorting.historyIndex].groups;
-        for (const [color, indices] of Object.entries(groups)) {
-          if (indices?.some((indice) => indice === idx)) {
-            candleColor = color;
-            break;
-          }
-        }
+			{(sorting.status !== "Finished"
+				? sorting.array
+				: sorting.history.moments[sorting.historyIndex].array
+			).map((value, idx) => {
+				let candleColor = DEFAULT_CANDLE_COLOR;
+				const groups =
+					sorting.status !== "Finished"
+						? sorting.groups
+						: sorting.history.moments[sorting.historyIndex].groups;
+				for (const [color, indices] of Object.entries(groups)) {
+					if (indices?.some((indice) => indice === idx)) {
+						candleColor = color;
+						break;
+					}
+				}
 
 				return (
 					<Candle
