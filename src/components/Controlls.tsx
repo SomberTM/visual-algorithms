@@ -246,21 +246,21 @@ export const ShowCandleHeight = observer(() => {
 ShowCandleHeight.displayName = "Show Candle Height";
 
 interface ControllsMenuProps {
-	initialControlls: ControllElement[];
+	controlls: ControllElement[];
 	onControllsChange: (controlls: ControllElement[]) => void;
 }
 
 function ControllsMenu({
-	initialControlls,
+	controlls,
 	onControllsChange,
 }: ControllsMenuProps) {
 	function onCheckedControllChange(
 		checked: boolean,
 		controll: ControllElement
 	) {
-		if (checked) onControllsChange([...initialControlls, controll]);
+		if (checked) onControllsChange([...controlls, controll]);
 		else {
-			const newControlls = [...initialControlls];
+			const newControlls = [...controlls];
 			newControlls.splice(
 				newControlls.findIndex((c) => c.displayName === controll.displayName),
 				1
@@ -271,24 +271,28 @@ function ControllsMenu({
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger>Manage Controlls</DropdownMenuTrigger>
+			<DropdownMenuTrigger>Add/Remove Controlls</DropdownMenuTrigger>
 			<DropdownMenuContent>
-				<DropdownMenuLabel>Controlls</DropdownMenuLabel>
-				{allControls.map((controll, idx) => (
-					<DropdownMenuCheckboxItem
-						key={idx}
-						checked={
-							initialControlls.findIndex((c) => {
-								return c.displayName === controll.displayName;
-							}) >= 0
-						}
-						onCheckedChange={(checked) =>
-							onCheckedControllChange(checked, controll)
-						}
-					>
-						{controll.displayName}
-					</DropdownMenuCheckboxItem>
-				))}
+        {Object.entries(controllGroups).map(([group, groupedControlls]) => {
+          return <>
+            <DropdownMenuLabel>{group}</DropdownMenuLabel>
+            {groupedControlls.map((controll, idx) => (
+              <DropdownMenuCheckboxItem
+              key={idx}
+              checked={
+                controlls.findIndex((c) => {
+                  return c.displayName === controll.displayName;
+                }) >= 0
+              }
+              onCheckedChange={(checked) =>
+                onCheckedControllChange(checked, controll)
+              }
+            >
+              {controll.displayName}
+            </DropdownMenuCheckboxItem>
+            ))}
+          </>
+        })}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
@@ -298,20 +302,12 @@ type ControllElement = (() => JSX.Element) & {
 	displayName: string;
 };
 
-const allControls = [
-	SortButton,
-  ShowHistorySlider,
-	SortingStatus,
-	SortingSpeed,
-	RandomizeArray,
-	CandleWidth,
-	NumCandles,
-	MaxCandleHeight,
-	ShowAlgrotihm,
-	SortTime,
-	ShowCandleHeight,
-];
-const allControlNames = allControls.map(({ displayName }) => displayName);
+const controllGroups: Record<string, ControllElement[]> = {
+  "Sorting": [SortButton, SortingSpeed, SortTime, ShowAlgrotihm, RandomizeArray],
+  "Candles": [NumCandles, CandleWidth, MaxCandleHeight, ShowCandleHeight],
+  "History": [ShowHistorySlider]
+}
+const allControlNames = Object.values(controllGroups).flatMap((value) => value).map(({ displayName }) => displayName);
 
 const Controlls = observer(({ children }: React.PropsWithChildren) => {
 	let initialControlls: ControllElement[] = [];
@@ -339,7 +335,7 @@ const Controlls = observer(({ children }: React.PropsWithChildren) => {
 			</div>
 			<div className="rounded-lg border px-4 py-2">
 				<ControllsMenu
-					initialControlls={controlls}
+					controlls={controlls}
 					onControllsChange={setControlls}
 				/>
 			</div>

@@ -69,7 +69,7 @@ export async function quickSort(this: SorterStore) {
 	await recursiveQuicksort(this, 0, this.array.length - 1);
 	this.clearGroups();
 }
-quickSort.displayName = "Quicksort";
+quickSort.displayName = "Quicksort (Lomuto)";
 
 async function recursiveQuicksort(store: SorterStore, lo: number, hi: number) {
 	if (lo >= hi || lo < 0) return;
@@ -118,7 +118,7 @@ export async function mergeSort(this: SorterStore) {
 	]);
 	this.clearGroups();
 }
-mergeSort.displayName = "Merge Sort";
+mergeSort.displayName = "Merge Sort (Top Down)";
 
 async function mergeSortSplit(
 	this: SorterStore,
