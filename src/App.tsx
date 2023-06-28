@@ -15,13 +15,22 @@ import {
 	mergeSort,
 	quickSort,
 	selectionSort,
+	shellSort,
 } from "@/lib/algorithms";
 import { SorterStore } from "./stores/SorterStore";
 import RootStore from "./stores/RootStore";
 
-const algorithms = [bubbleSort, insertionSort, selectionSort, quickSort, mergeSort, heapsort];
+const algorithms = [
+	bubbleSort,
+	insertionSort,
+	selectionSort,
+	quickSort,
+	mergeSort,
+	heapsort,
+	shellSort,
+];
 const sorters = algorithms.map((algorithm) => new SorterStore(algorithm));
-sorters.forEach((sorter) => RootStore.sortersById[sorter.id] = sorter);
+sorters.forEach((sorter) => (RootStore.sortersById[sorter.id] = sorter));
 
 function App() {
 	return (
@@ -35,7 +44,7 @@ function App() {
 						<SortingStatus />
 						<ShowAlgrotihm />
 						<SortTime />
-            <ShowStatistics />
+						<ShowStatistics />
 					</Sorting.Controlls>
 					<Sorting.Visualizer />
 				</Sorting>
