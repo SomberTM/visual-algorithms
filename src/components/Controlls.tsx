@@ -13,11 +13,13 @@ import { randomArray } from "@/lib/utils";
 import { Checkbox } from "./ui/checkbox";
 import { useSorter } from "./context/Sorting";
 import { observer } from "mobx-react-lite";
+import React from "react";
+import { Slider } from "./ui/slider";
 
 export const SortButton = observer(() => {
 	const sorting = useSorter();
 
-	async function handleSortClicked() {
+	function handleSortClicked() {
 		sorting.sort();
 	}
 
@@ -28,6 +30,26 @@ export const SortButton = observer(() => {
 	);
 });
 SortButton.displayName = "Sort Button";
+
+export const ShowHistorySlider = observer(() => {
+	const sorting = useSorter();
+
+	return (
+    <div className="flex items-center gap-4">
+			<Label>History</Label>
+      <Slider
+        className="w-48"
+        disabled={sorting.status !== "Finished"}
+        step={1}
+        max={sorting.history.moments.length - 1}
+        value={[sorting.historyIndex]}
+        onValueChange={(value: number[]) => sorting.setSortingHistoryIndex(value[0])}
+        min={0}
+      />
+    </div>
+	);
+});
+ShowHistorySlider.displayName = "Show History Slider"
 
 export const CandleWidth = observer(() => {
 	const sorting = useSorter();
@@ -278,6 +300,7 @@ type ControllElement = (() => JSX.Element) & {
 
 const allControls = [
 	SortButton,
+  ShowHistorySlider,
 	SortingStatus,
 	SortingSpeed,
 	RandomizeArray,
@@ -315,7 +338,6 @@ const Controlls = observer(({ children }: React.PropsWithChildren) => {
 				{controlls.map((Controll, idx) => (
 					<Controll key={idx} />
 				))}
-				<div>Swaps: {sorting.history.totalSwaps}</div>
 			</div>
 			<div className="rounded-lg border px-4 py-2">
 				<ControllsMenu

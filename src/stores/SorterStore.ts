@@ -1,13 +1,20 @@
 import { action, makeObservable, observable } from "mobx";
-import RootStore from "./RootStore";
 import { randomArray, sleep } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
+import { type CSSProperties } from "react";
+
+type SortingPromise =
+	| { reject: (value?: unknown) => void; resolve: (reason?: any) => void }
+	| undefined;
 
 export type SortingStatus = "Idle" | "Sorting" | "Finished";
-export type SortingGroups = Array<Array<number>>;
-export type SortingAlgorithm = (() => Promise<void> | void) & {
+export type SortingAlgorithm = (() => Promise<void>) & {
 	displayName: string;
 };
+
+type BackgroundColor = Exclude<CSSProperties["backgroundColor"], undefined>;
+type MyPartial<T> = { [P in keyof T]?: T[P] };
+export type SortingGroups = MyPartial<Record<BackgroundColor, number[]>>;
 
 export interface SortingMoment {
 	readonly array: number[];
@@ -28,7 +35,7 @@ const DEFAULT_NUM_CANDLES = 50;
 const DEFAULT_SORTING_STATUS: SortingStatus = "Idle";
 const DEFAULT_CANDLE_WIDTH = 25;
 const DEFAULT_SORTING_SPEED = 10;
-const DEFAULT_GROUPS: SortingGroups = [];
+const DEFAULT_GROUPS: SortingGroups = {};
 const DEFAULT_SORT_TIME = 0;
 const DEFAULT_SHOW_CANDLE_HEIGHT = true;
 
@@ -37,6 +44,7 @@ export class SorterStore {
 
 	@observable array: number[];
 	@observable history: SortHistory;
+	@observable historyIndex: number;
 	@observable status: SortingStatus;
 	@observable groups: SortingGroups;
 	@observable sortTime: number;
@@ -46,7 +54,7 @@ export class SorterStore {
 	@observable maxCandleHeight: number;
 	@observable showCandleHeight: boolean;
 
-	constructor(public rootStore: RootStore, public algorithm: SortingAlgorithm) {
+	constructor(public algorithm: SortingAlgorithm) {
 		makeObservable(this);
 
 		this.id = uuidv4();
@@ -60,6 +68,7 @@ export class SorterStore {
 		this.maxCandleHeight = DEFAULT_MAX_CANDLE_HEIGHT;
 		this.showCandleHeight = DEFAULT_SHOW_CANDLE_HEIGHT;
 		this.history = this.getIdleHistory();
+		this.historyIndex = 0;
 	}
 
 	private getIdleHistory(): SortHistory {
@@ -67,7 +76,7 @@ export class SorterStore {
 			moments: [
 				{
 					array: [...this.array],
-					groups: [],
+					groups: {},
 					totalComparisons: 0,
 					totalSwaps: 0,
 				},
@@ -85,17 +94,24 @@ export class SorterStore {
 
 	@action
 	setStatus(status: SortingStatus) {
-		console.log(status);
-		if (status === "Idle") this.history = this.getIdleHistory();
-		if (status === "Finished") {
-			console.log(this.history.moments);
-		}
+		if (status !== "Finished") this.setSortingHistoryIndex(0);
+
 		this.status = status;
 	}
 
 	@action
 	setGroups(groups: SortingGroups) {
 		this.groups = groups;
+	}
+
+	@action
+	setGroup(groupColor: BackgroundColor, indices: number[]) {
+		this.groups[groupColor] = indices;
+	}
+
+	@action
+	clearGroups() {
+		this.groups = {};
 	}
 
 	@action
@@ -133,21 +149,42 @@ export class SorterStore {
 	}
 
 	@action
-	swap(i: number, j: number) {
-		const lastMoment = this.history.moments.at(-1);
+	setSortingHistoryIndex(index: number) {
+		this.historyIndex = index;
+	}
+
+	@action
+	captureHistory(action?: "swap" | "compare") {
+		const lastMoment = this.history.moments.at(-1) as SortingMoment;
+		const isActionSwap = action && action === "swap";
+		const isActionCompare = action && action === "compare";
 		this.history = {
 			...this.history,
 			moments: [
 				...this.history.moments,
 				{
 					array: [...this.array],
-					groups: [...this.groups],
-					totalSwaps: lastMoment!.totalSwaps + 1,
-					totalComparisons: 0,
+					groups: { ...this.groups },
+					totalSwaps: isActionSwap
+						? lastMoment.totalSwaps + 1
+						: lastMoment.totalSwaps,
+					totalComparisons: isActionCompare
+						? lastMoment.totalComparisons + 1
+						: lastMoment.totalComparisons,
 				},
 			],
-			totalSwaps: this.history.totalSwaps + 1,
+			totalSwaps: isActionSwap
+				? this.history.totalSwaps + 1
+				: this.history.totalComparisons,
+			totalComparisons: isActionCompare
+				? this.history.totalComparisons + 1
+				: this.history.totalComparisons,
 		};
+	}
+
+	@action
+	swap(i: number, j: number) {
+		this.captureHistory("swap");
 
 		const temp = this.array[i];
 		this.array[i] = this.array[j];
@@ -167,10 +204,13 @@ export class SorterStore {
 
 	@action
 	async sort() {
+		this.history = this.getIdleHistory();
 		this.setStatus("Sorting");
 		const timeStart = performance.now();
-		await this.algorithm.bind(this)();
+		await this.algorithm.call(this);
 		this.sortTime = performance.now() - timeStart;
 		this.setStatus("Finished");
+		this.captureHistory();
+		this.setSortingHistoryIndex(this.history.moments.length - 1);
 	}
 }

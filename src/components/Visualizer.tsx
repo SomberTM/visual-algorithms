@@ -8,7 +8,8 @@ interface VisualizerProps {
 	height?: number;
 }
 
-const groupColors = ["red", "green", "yellow", "blue", "purple", "white"];
+// const groupColors = ["red", "green", "yellow", "blue", "purple", "white"];
+const DEFAULT_CANDLE_COLOR = "white";
 
 const Visualizer = observer(({ width, height }: VisualizerProps) => {
 	const sorting = useSorter();
@@ -25,12 +26,16 @@ const Visualizer = observer(({ width, height }: VisualizerProps) => {
 			className="mx-4 mt-2 flex gap-1 items-end"
 			ref={parent}
 		>
-			{sorting.array.map((value, idx) => {
-				const candleColor = groupColors.at(
-					sorting.groups.findIndex((group) =>
-						group.some((index) => index === idx)
-					)
-				);
+			{(sorting.status !== "Finished" ? sorting.array : sorting.history.moments[sorting.historyIndex].array).map((value, idx) => {
+        let candleColor = DEFAULT_CANDLE_COLOR;
+        const groups = sorting.status !== "Finished" ? sorting.groups : sorting.history.moments[sorting.historyIndex].groups;
+        for (const [color, indices] of Object.entries(groups)) {
+          if (indices?.some((indice) => indice === idx)) {
+            candleColor = color;
+            break;
+          }
+        }
+
 				return (
 					<Candle
 						key={idx}

@@ -10,17 +10,22 @@ import {
 import {
 	bubbleSort,
 	insertionSort,
-	quicksort,
+	mergeSort,
+	quickSort,
 	selectionSort,
 } from "@/lib/algorithms";
+import { SorterStore } from "./stores/SorterStore";
+import RootStore from "./stores/RootStore";
 
-const algorithms = [bubbleSort, insertionSort, selectionSort, quicksort];
+const algorithms = [bubbleSort, insertionSort, selectionSort, quickSort, mergeSort];
+const sorters = algorithms.map((algorithm) => new SorterStore(algorithm));
+sorters.forEach((sorter) => RootStore.sortersById[sorter.id] = sorter);
 
 function App() {
 	return (
 		<main className="p-2 flex flex-col gap-4 min-h-[100dvh] bg-background">
-			{algorithms.map((algorithm, idx) => (
-				<Sorting algorithm={algorithm} key={idx}>
+			{sorters.map((sorter, idx) => (
+				<Sorting sorter={sorter} key={idx}>
 					<Sorting.Controlls>
 						<NumCandles />
 						<RandomizeArray />
