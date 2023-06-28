@@ -158,7 +158,7 @@ async function merge(
 	);
 
 	for (let k = begin; k < end; k++) {
-    if (i < middle && j < end) this.comparelte(i, j);
+		if (i < middle && j < end) this.comparelte(i, j);
 		if (i < middle && (j >= end || A[i] <= A[j])) {
 			this.setGroup("red", [k]);
 			this.captureHistory("swap");
@@ -214,8 +214,7 @@ async function siftDown(this: SorterStore, start: number, end: number) {
 		let swap = root;
 
 		if (this.comparelt(swap, child)) swap = child;
-		if (child + 1 <= end && this.comparelt(swap, child + 1))
-			swap = child + 1;
+		if (child + 1 <= end && this.comparelt(swap, child + 1)) swap = child + 1;
 		if (swap == root) return;
 		else {
 			this.setGroup("red", [root]);
@@ -225,3 +224,26 @@ async function siftDown(this: SorterStore, start: number, end: number) {
 		}
 	}
 }
+
+const ciuraGaps = [701, 301, 132, 57, 23, 10, 4, 1];
+export async function shellSort(this: SorterStore) {
+	for (const gap of ciuraGaps) {
+		for (let i = gap; i < this.array.length; i++) {
+			const temp = this.array[i];
+			const array = [...this.array];
+			let j;
+			for (j = i; j >= gap && this.array[j - gap] > temp; j -= gap) {
+				array[j] = array[j - gap];
+				this.setGroups({ red: [j], green: [j - gap] });
+				this.setArray(array);
+				await this.wait();
+			}
+			array[j] = temp;
+			this.setGroups({ red: [j], green: [i] });
+			this.setArray(array);
+			await this.wait();
+		}
+	}
+	this.clearGroups();
+}
+shellSort.displayName = "Shell Sort";
