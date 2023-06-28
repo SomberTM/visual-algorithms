@@ -158,6 +158,7 @@ async function merge(
 	);
 
 	for (let k = begin; k < end; k++) {
+    if (i < middle && j < end) this.comparelte(i, j);
 		if (i < middle && (j >= end || A[i] <= A[j])) {
 			this.setGroup("red", [k]);
 			this.captureHistory("swap");
@@ -212,8 +213,8 @@ async function siftDown(this: SorterStore, start: number, end: number) {
 		const child = leftChild(root);
 		let swap = root;
 
-		if (this.array[swap] < this.array[child]) swap = child;
-		if (child + 1 <= end && this.array[swap] < this.array[child + 1])
+		if (this.comparelt(swap, child)) swap = child;
+		if (child + 1 <= end && this.comparelt(swap, child + 1))
 			swap = child + 1;
 		if (swap == root) return;
 		else {

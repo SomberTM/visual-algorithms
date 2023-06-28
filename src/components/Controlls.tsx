@@ -57,7 +57,7 @@ export const ShowStatistics = observer(() => {
 	const sorting = useSorter();
 
 	return (
-		<div className="flex items-center gap-1">
+		<div className="flex items-center gap-2">
 			<p>
 				Swaps:{" "}
 				<span className="font-bold">

@@ -3,6 +3,7 @@ import {
 	NumCandles,
 	RandomizeArray,
 	ShowAlgrotihm,
+	ShowStatistics,
 	SortButton,
 	SortTime,
 	SortingStatus,
@@ -34,6 +35,7 @@ function App() {
 						<SortingStatus />
 						<ShowAlgrotihm />
 						<SortTime />
+            <ShowStatistics />
 					</Sorting.Controlls>
 					<Sorting.Visualizer />
 				</Sorting>
