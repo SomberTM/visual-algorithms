@@ -9,6 +9,7 @@ import {
 } from "./components/Controlls";
 import {
 	bubbleSort,
+	heapsort,
 	insertionSort,
 	mergeSort,
 	quickSort,
@@ -17,7 +18,7 @@ import {
 import { SorterStore } from "./stores/SorterStore";
 import RootStore from "./stores/RootStore";
 
-const algorithms = [bubbleSort, insertionSort, selectionSort, quickSort, mergeSort];
+const algorithms = [bubbleSort, insertionSort, selectionSort, quickSort, mergeSort, heapsort];
 const sorters = algorithms.map((algorithm) => new SorterStore(algorithm));
 sorters.forEach((sorter) => RootStore.sortersById[sorter.id] = sorter);
 

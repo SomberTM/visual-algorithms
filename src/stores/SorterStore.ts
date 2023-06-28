@@ -12,11 +12,14 @@ type BackgroundColor = Exclude<CSSProperties["backgroundColor"], undefined>;
 type MyPartial<T> = { [P in keyof T]?: T[P] };
 export type SortingGroups = MyPartial<Record<BackgroundColor, number[]>>;
 
+type MomentAction = "swap" | "compare" | "none";
+
 export interface SortingMoment {
 	readonly array: number[];
 	readonly groups: SortingGroups;
 	readonly totalSwaps: number;
 	readonly totalComparisons: number;
+	readonly action: MomentAction;
 }
 
 export interface SortHistory {
@@ -75,6 +78,7 @@ export class SorterStore {
 					groups: {},
 					totalComparisons: 0,
 					totalSwaps: 0,
+					action: "none",
 				},
 			],
 			totalComparisons: 0,
@@ -150,12 +154,12 @@ export class SorterStore {
 	}
 
 	@action
-	captureHistory(action?: "swap" | "compare") {
+	captureHistory(action?: MomentAction) {
 		const lastMoment = this.history.moments.at(-1) as SortingMoment;
 		const isActionSwap = action && action === "swap";
 		const isActionCompare = action && action === "compare";
 		this.history = {
-			...this.history,
+      speed: this.history.speed,
 			moments: [
 				...this.history.moments,
 				{
@@ -167,11 +171,12 @@ export class SorterStore {
 					totalComparisons: isActionCompare
 						? lastMoment.totalComparisons + 1
 						: lastMoment.totalComparisons,
+					action: action ?? "none",
 				},
 			],
 			totalSwaps: isActionSwap
 				? this.history.totalSwaps + 1
-				: this.history.totalComparisons,
+				: this.history.totalSwaps,
 			totalComparisons: isActionCompare
 				? this.history.totalComparisons + 1
 				: this.history.totalComparisons,
@@ -209,4 +214,29 @@ export class SorterStore {
 		this.captureHistory();
 		this.setSortingHistoryIndex(this.history.moments.length - 1);
 	}
+
+	@action
+	comparelt(i: number, j: number): boolean {
+		this.captureHistory("compare");
+		return this.array[i] < this.array[j];
+	}
+
+  @action
+  comparelte(i: number, j: number): boolean {
+		this.captureHistory("compare");
+		return this.array[i] <= this.array[j];
+	}
+
+  @action
+  comparegt(i: number, j: number): boolean {
+    this.captureHistory("compare");
+    return this.array[i] > this.array[j];
+  }
+
+  @action
+  comparegte(i: number, j: number): boolean {
+    this.captureHistory("compare");
+    return this.array[i] >= this.array[j];
+  }
+
 }

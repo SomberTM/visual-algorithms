@@ -35,21 +35,49 @@ export const ShowHistorySlider = observer(() => {
 	const sorting = useSorter();
 
 	return (
-    <div className="flex items-center gap-4">
+		<div className="flex items-center gap-4">
 			<Label>History</Label>
-      <Slider
-        className="w-48"
-        disabled={sorting.status !== "Finished"}
-        step={1}
-        max={sorting.history.moments.length - 1}
-        value={[sorting.historyIndex]}
-        onValueChange={(value: number[]) => sorting.setSortingHistoryIndex(value[0])}
-        min={0}
-      />
-    </div>
+			<Slider
+				className="w-48"
+				disabled={sorting.status !== "Finished"}
+				step={1}
+				max={sorting.history.moments.length - 1}
+				value={[sorting.historyIndex]}
+				onValueChange={(value: number[]) =>
+					sorting.setSortingHistoryIndex(value[0])
+				}
+				min={0}
+			/>
+		</div>
 	);
 });
-ShowHistorySlider.displayName = "Show History Slider"
+ShowHistorySlider.displayName = "Show History Slider";
+
+export const ShowStatistics = observer(() => {
+	const sorting = useSorter();
+
+	return (
+		<div className="flex items-center gap-1">
+			<p>
+				Swaps:{" "}
+				<span className="font-bold">
+					{sorting.status === "Finished"
+						? sorting.history.moments[sorting.historyIndex].totalSwaps
+						: sorting.history.totalSwaps}
+				</span>
+			</p>
+			<p>
+				Comparisons:{" "}
+				<span className="font-bold">
+					{sorting.status === "Finished"
+						? sorting.history.moments[sorting.historyIndex].totalComparisons
+						: sorting.history.totalComparisons}
+				</span>
+			</p>
+		</div>
+	);
+});
+ShowStatistics.displayName = "Show Statistics";
 
 export const CandleWidth = observer(() => {
 	const sorting = useSorter();
@@ -250,10 +278,7 @@ interface ControllsMenuProps {
 	onControllsChange: (controlls: ControllElement[]) => void;
 }
 
-function ControllsMenu({
-	controlls,
-	onControllsChange,
-}: ControllsMenuProps) {
+function ControllsMenu({ controlls, onControllsChange }: ControllsMenuProps) {
 	function onCheckedControllChange(
 		checked: boolean,
 		controll: ControllElement
@@ -273,26 +298,28 @@ function ControllsMenu({
 		<DropdownMenu>
 			<DropdownMenuTrigger>Add/Remove Controlls</DropdownMenuTrigger>
 			<DropdownMenuContent>
-        {Object.entries(controllGroups).map(([group, groupedControlls]) => {
-          return <>
-            <DropdownMenuLabel>{group}</DropdownMenuLabel>
-            {groupedControlls.map((controll, idx) => (
-              <DropdownMenuCheckboxItem
-              key={idx}
-              checked={
-                controlls.findIndex((c) => {
-                  return c.displayName === controll.displayName;
-                }) >= 0
-              }
-              onCheckedChange={(checked) =>
-                onCheckedControllChange(checked, controll)
-              }
-            >
-              {controll.displayName}
-            </DropdownMenuCheckboxItem>
-            ))}
-          </>
-        })}
+				{Object.entries(controllGroups).map(([group, groupedControlls]) => {
+					return (
+						<>
+							<DropdownMenuLabel>{group}</DropdownMenuLabel>
+							{groupedControlls.map((controll, idx) => (
+								<DropdownMenuCheckboxItem
+									key={idx}
+									checked={
+										controlls.findIndex((c) => {
+											return c.displayName === controll.displayName;
+										}) >= 0
+									}
+									onCheckedChange={(checked) =>
+										onCheckedControllChange(checked, controll)
+									}
+								>
+									{controll.displayName}
+								</DropdownMenuCheckboxItem>
+							))}
+						</>
+					);
+				})}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
@@ -303,11 +330,13 @@ type ControllElement = (() => JSX.Element) & {
 };
 
 const controllGroups: Record<string, ControllElement[]> = {
-  "Sorting": [SortButton, SortingSpeed, SortTime, ShowAlgrotihm, RandomizeArray],
-  "Candles": [NumCandles, CandleWidth, MaxCandleHeight, ShowCandleHeight],
-  "History": [ShowHistorySlider]
-}
-const allControlNames = Object.values(controllGroups).flatMap((value) => value).map(({ displayName }) => displayName);
+	Sorting: [SortButton, SortingSpeed, SortingStatus, SortTime, ShowAlgrotihm, RandomizeArray],
+	Candles: [NumCandles, CandleWidth, MaxCandleHeight, ShowCandleHeight],
+	History: [ShowHistorySlider, ShowStatistics],
+};
+const allControlNames = Object.values(controllGroups)
+	.flatMap((value) => value)
+	.map(({ displayName }) => displayName);
 
 const Controlls = observer(({ children }: React.PropsWithChildren) => {
 	let initialControlls: ControllElement[] = [];
@@ -334,10 +363,7 @@ const Controlls = observer(({ children }: React.PropsWithChildren) => {
 				))}
 			</div>
 			<div className="rounded-lg border px-4 py-2">
-				<ControllsMenu
-					controlls={controlls}
-					onControllsChange={setControlls}
-				/>
+				<ControllsMenu controlls={controlls} onControllsChange={setControlls} />
 			</div>
 		</div>
 	);

@@ -6,7 +6,7 @@ export async function bubbleSort(this: SorterStore) {
 	do {
 		swapped = false;
 		for (let i = 1; i < this.array.length; i++) {
-			if (this.array[i - 1] > this.array[i]) {
+			if (this.comparegt(i - 1, i)) {
 				this.setGroups({
 					red: [i - 1],
 					green: [i],
@@ -31,7 +31,7 @@ bubbleSort.displayName = "Bubble Sort";
 
 export async function insertionSort(this: SorterStore) {
 	for (let i = 1; i < this.array.length; i++) {
-		for (let j = i; j > 0 && this.array[j - 1] > this.array[j]; j--) {
+		for (let j = i; j > 0 && this.comparegt(j - 1, j); j--) {
 			this.setGroups({
 				red: [j],
 				green: [j - 1],
@@ -48,7 +48,7 @@ export async function selectionSort(this: SorterStore) {
 	for (let i = 0; i < this.array.length - 1; i++) {
 		let minIndex = i;
 		for (let j = i + 1; j < this.array.length; j++) {
-			if (this.array[j] < this.array[minIndex]) {
+			if (this.comparelt(j, minIndex)) {
 				minIndex = j;
 			}
 			this.setGroups({
@@ -66,28 +66,28 @@ export async function selectionSort(this: SorterStore) {
 selectionSort.displayName = "Selection Sort";
 
 export async function quickSort(this: SorterStore) {
-	await recursiveQuicksort(this, 0, this.array.length - 1);
+	await recursiveQuicksort.call(this, 0, this.array.length - 1);
 	this.clearGroups();
 }
 quickSort.displayName = "Quicksort (Lomuto)";
 
-async function recursiveQuicksort(store: SorterStore, lo: number, hi: number) {
+async function recursiveQuicksort(this: SorterStore, lo: number, hi: number) {
 	if (lo >= hi || lo < 0) return;
 
-	const p = await quicksortPartition(store, lo, hi);
+	const p = await quicksortPartition.call(this, lo, hi);
 
-	await recursiveQuicksort(store, lo, p - 1);
-	await recursiveQuicksort(store, p + 1, hi);
+	await recursiveQuicksort.call(this, lo, p - 1);
+	await recursiveQuicksort.call(this, p + 1, hi);
 }
 
-async function quicksortPartition(store: SorterStore, lo: number, hi: number) {
-	const pivot = store.array[hi];
+async function quicksortPartition(this: SorterStore, lo: number, hi: number) {
+	// const pivot = this.array[hi];
 	let i = lo - 1;
 
 	for (let j = lo; j < hi; j++) {
-		if (store.array[j] <= pivot) {
+		if (this.comparelte(j, hi)) {
 			i++;
-			store.setGroups({
+			this.setGroups({
 				red: [i],
 				green: [j],
 				yellow: Array.from({ length: Math.abs(j - i - 1) }).map(
@@ -95,12 +95,12 @@ async function quicksortPartition(store: SorterStore, lo: number, hi: number) {
 				),
 				blue: [lo, hi],
 			});
-			await store.swapAndWait(i, j);
+			await this.swapAndWait(i, j);
 		}
 	}
 
 	i++;
-	store.setGroups({
+	this.setGroups({
 		red: [i],
 		green: [hi - 1],
 		yellow: Array.from({ length: Math.abs(hi - i - 1) }).map(
@@ -108,7 +108,7 @@ async function quicksortPartition(store: SorterStore, lo: number, hi: number) {
 		),
 		blue: [lo, hi],
 	});
-	await store.swapAndWait(i, hi);
+	await this.swapAndWait(i, hi);
 	return i;
 }
 
@@ -147,15 +147,15 @@ async function merge(
 ) {
 	let i = begin;
 	let j = middle;
-  
-  this.setGroup(
-    "yellow",
-    Array.from({ length: middle - begin }).map((_, idx) => idx + begin)
-  );
-  this.setGroup(
-    "orange",
-    Array.from({ length: end - middle }).map((_, idx) => idx + middle)
-  );
+
+	this.setGroup(
+		"yellow",
+		Array.from({ length: middle - begin }).map((_, idx) => idx + begin)
+	);
+	this.setGroup(
+		"orange",
+		Array.from({ length: end - middle }).map((_, idx) => idx + middle)
+	);
 
 	for (let k = begin; k < end; k++) {
 		if (i < middle && (j >= end || A[i] <= A[j])) {
@@ -172,5 +172,55 @@ async function merge(
 			await this.wait();
 		}
 	}
+}
 
+export async function heapsort(this: SorterStore) {
+	await heapify.call(this);
+
+	let end = this.array.length - 1;
+	while (end > 0) {
+		this.setGroup("red", [end]);
+		this.setGroup("green", [0]);
+		await this.swapAndWait(end, 0);
+		end--;
+		await siftDown.call(this, 0, end);
+	}
+
+	this.clearGroups();
+}
+heapsort.displayName = "Heap Sort";
+
+function parent(i: number) {
+	return Math.floor((i - 1) / 2);
+}
+function leftChild(i: number) {
+	return 2 * i + 1;
+}
+
+async function heapify(this: SorterStore) {
+	let start = parent(this.array.length - 1);
+	while (start >= 0) {
+		await siftDown.call(this, start, this.array.length - 1);
+		start--;
+	}
+}
+
+async function siftDown(this: SorterStore, start: number, end: number) {
+	let root = start;
+
+	while (leftChild(root) <= end) {
+		const child = leftChild(root);
+		let swap = root;
+
+		if (this.array[swap] < this.array[child]) swap = child;
+		if (child + 1 <= end && this.array[swap] < this.array[child + 1])
+			swap = child + 1;
+		if (swap == root) return;
+		else {
+			this.setGroup("red", [root]);
+			this.setGroup("green", [swap]);
+			await this.swapAndWait(root, swap);
+			root = swap;
+		}
+	}
 }
